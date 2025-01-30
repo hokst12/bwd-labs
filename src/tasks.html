@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Список задач - PS</title>
+    <link rel="icon" href="favicon.ico">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <header>
+        <nav>
+            <div class="logo">Логотип</div>
+            <div class="menu" id="menu">
+                <a href="index.html">Главная</a>
+                <a href="projects.html">Проекты</a>
+                <a href="tasks.html" class="active">Список задач</a>
+                <a href="about.html">О приложении</a>
+            </div>
+            <div class="burger" id="burger"></div>
+        </nav>
+    </header>
+
+    <main>
+        <dialog id="modal">добавление новой задачи
+            <div>
+                <input type="text" id="taskInput" placeholder="Введите задачу" />
+                <button onclick="addTask()">Добавить</button>
+                <button onclick="goBack()">Назад</button>
+            </div>
+        </dialog>
+        <link rel="stylesheet" href="main.css">
+<h1>Список задач</h1>
+<div>
+    <button onclick="sm()">Добавить</button>
+</div>
+<table>
+    <thead>
+        <tr>
+            <th>Задачи</th>
+            <th>В работе</th>
+            <th>Выполненные</th>
+        </tr>
+    </thead>
+    <tbody id="taskList">
+        <!-- Задачи будут добавлены сюда -->
+    </tbody>
+</table>
+<script>
+    // Получаем задачи из localStorage
+    function loadTasks() {
+        const taskList = document.getElementById('taskList');
+        const tasks = JSON.parse(localStorage.getItem('tasks')) || [];
+        tasks.forEach(task => {
+            addTaskToTable(task.text, task.status);
+        });
+    }
+    function addTaskToTable(taskText, status) {
+        const taskList = document.getElementById('taskList');
+        const row = document.createElement('tr');
+        
+        // Ячейка с задачей и кнопкой удаления
+        const taskCell = document.createElement('td');
+        taskCell.innerHTML = `${taskText} <button onclick="deleteTask(this)">Удалить</button>`;
+        
+        // Ячейка "В работе"
+        const inProgressCell = document.createElement('td');
+        const inProgressRadio = document.createElement('input');
+        inProgressRadio.className = 'radio-button'
+        inProgressRadio.type = 'radio';
+        inProgressRadio.name = `status-${taskText}`; // Группировка по имени
+        inProgressRadio.checked = (status === 'inProgress'); // Устанавливаем статус по умолчанию
+        if (status === 'inProgress'){
+            taskCell.classList.remove('completed');
+        }
+        inProgressRadio.onclick = function() {
+            updateTaskStatus(taskText, 'inProgress');
+            taskCell.classList.remove('completed');
+        };
+        inProgressCell.appendChild(inProgressRadio);
+        
+        // Ячейка "Выполненные"
+        const completedCell = document.createElement('td');
+        const completedRadio = document.createElement('input');
+        completedRadio.className = 'radio-button'
+        completedRadio.type = 'radio';
+        completedRadio.name = `status-${taskText}`; // Группировка по имени
+        completedRadio.checked = (status === 'completed'); // Устанавливаем статус по умолчанию
+        if (status === 'completed'){
+            taskCell.classList.add('completed');
+        }
+        completedRadio.onclick = function() {
+            updateTaskStatus(taskText, 'completed');
+            taskCell.classList.add('completed');
+        };
+        completedCell.appendChild(completedRadio);
+        
+        row.appendChild(taskCell);
+        row.appendChild(inProgressCell);
+        row.appendChild(completedCell);
+        taskList.appendChild(row);
+    }
+    function deleteTask(button) {
+        const taskCell = button.parentElement;
+        const taskText = taskCell.firstChild.textContent.trim(); // Убираем лишние пробелы
+        taskCell.parentElement.remove(); // Удаляем строку из таблицы
+        removeTaskFromStorage(taskText);
+    }
+    function removeTaskFromStorage(taskText) {
+        let tasks = JSON.parse(localStorage.getItem('tasks')) || [];
+        tasks = tasks.filter(task => task.text !== taskText); // Фильтруем задачи
+        localStorage.setItem('tasks', JSON.stringify(tasks)); // Сохраняем обновленный массив
+    }
+    function updateTaskStatus(taskText, status) {
+        console.log(`Статус задачи "${taskText}" изменен на: ${status}`);
+        let tasks = JSON.parse(localStorage.getItem('tasks')) || [];
+        tasks = tasks.map(task => {
+            if (task.text === taskText) {
+                task.status = status; // Обновляем статус задачи
+            }
+            return task;
+        });
+        localStorage.setItem('tasks', JSON.stringify(tasks));
+    }
+    // Загружаем задачи при загрузке страницы
+    loadTasks();
+</script>
+
+    </main>
+
+    <script src="bundle.js"></script>
+</body>
+</html>
